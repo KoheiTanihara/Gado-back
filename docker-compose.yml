@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      db: # dbサービスに依存
+        condition: service_healthy # dbのヘルスチェック成功後にappを開始
+    environment:
+      - DATABASE_URL=mysql+pymysql://root:password@db:3306/ptodo
+      - SECRET_KEY=${SECRET_KEY:-your_default_secret_key} # デフォルト値も設定推奨
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=ptodo
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      # test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"] # 修正前
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-ppassword"] # 修正後: パスワードを直接指定
+      interval: 10s # ヘルスチェックの間隔を短縮しても良いかも
+      timeout: 5s
+      retries: 5 # リトライ回数を少し減らす
+
+volumes:
+  db_data:
