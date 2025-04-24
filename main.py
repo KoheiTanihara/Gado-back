@@ -1,6 +1,7 @@
 import time
 import os # os モジュールが必要
 from fastapi import FastAPI, Depends, HTTPException # HTTPExceptionも追加すると良いかも
+from fastapi.middleware.cors import CORSMiddleware  # CORSミドルウェアを追加
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 # from sqlalchemy.ext.declarative import declarative_base # models.py から Base を使うので不要
@@ -61,6 +62,15 @@ except Exception as e:
 
 print("--- FastAPI アプリケーションインスタンス化 ---")
 app = FastAPI()
+
+# CORSミドルウェアの設定を追加
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 本番環境ではより制限的に設定することをお勧めします
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # get_db 関数を main.py 内で定義 (database.py にあるならそちらを import でもOK)
 def get_db():
